@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Person {
   id: number;
@@ -8,10 +8,23 @@ interface Person {
 }
 
 function App() {
-  const [list, setList] = useState<Person[]>([
-    { id: 1, name: "test", time: 0 },
-    { id: 2, name: "test2", time: 0 },
-  ]);
+  const [list, setList] = useState<Person[]>([]);
+  const [currentTime, setCurrentTime] = useState(Date.now() + 1000);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+
+  const handleQueueJoin = () => {
+    setList([...list, {id: list.length, name: 'name', time: new Date().getTime()}]);
+  }
 
   return (
     <>
@@ -22,11 +35,17 @@ function App() {
         <input name="password"></input>
       </div>
       <div>
+        <h1>Join Queue</h1>
+        <label>name:</label>
+        <input name="name"></input>
+        <button onClick={handleQueueJoin}>Join</button>
+      </div>
+      <div>
         {list.map((item, index: number) => (
           <div key={index}>
             <p>
               {item.name}
-              {` Time in queue - ${item.time}`}
+              {` Time in queue - ${Math.floor((currentTime - item.time) / 60000)} minutes and ${Math.floor(((currentTime - item.time) % 60000) / 1000)} seconds`}
             </p>
             <button
               onClick={() => setList(list.filter((it) => it.id != item.id))}
