@@ -1,6 +1,8 @@
-import "./App.css";
-import { useState, useEffect } from "react";
-import UserItem from "./components/UserItem";
+import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client';
+import UserItem from './components/UserItem';
+
+const socket = io('http://localhost:3000'); // Replace with your server address
 
 interface Person {
   id: number;
@@ -8,10 +10,24 @@ interface Person {
   time: number;
 }
 
-function App() {
+const App: React.FC = () => {
   const [list, setList] = useState<Person[]>([]);
   const [text, setText] = useState("");
   const [currentTime, setCurrentTime] = useState(Date.now() + 1000);
+
+  useEffect(() => {
+    socket.on('queueUpdated', (updatedPerson: Person) => {
+      setList([...list, updatedPerson]);
+    });
+
+    return () => {
+      socket.off('queueUpdated'); // Clean up event listener on unmount
+    };
+  }, [list]);
+
+  socket.on('queueUpdated', (updatedQueue) => {
+    setList(updatedQueue);
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -23,16 +39,19 @@ function App() {
     };
   }, []);
 
-  const handleQueueJoin = (user_name: string) => {
-    setList([
-      ...list,
-      { id: list.length, name: user_name, time: new Date().getTime() },
-    ]);
+  const handleQueueJoin = (userName: string) => {
+  const newPerson: Person = {
+    id: list.length, // Assuming id is sequential on the client-side
+    name: userName,
+    time: Date.now(),
   };
+  socket.emit('joinQueue', newPerson);
+};
 
-  const handleQueueResolve = (id: number) => {
-    setList(list.filter((item) => item.id !== id));
-  };
+const handleQueueResolve = (id: number) => {
+  socket.emit('resolveQueue', id);
+};
+  
 
   return (
     <div className="w-screen min-h-screen bg-slate-400 flex justify-center text-lg">
