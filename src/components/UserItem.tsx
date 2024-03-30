@@ -11,9 +11,9 @@ type UserItemProps = {
 
 const UserItem = ({ user, resolve }: UserItemProps) => {
   return (
-    <div className="flex flex-row w-full">
-      <p>{user.name}</p>
-      <p>{user.queueDuration}</p>
+    <div className="flex flex-row w-full bg-white px-48 py-4 my-1">
+      <p className="text-xl capitalize font-sans font-semibold">{user.name}</p>
+      <p className="text-lg italic">{user.queueDuration}</p>
       <button onClick={resolve}>Resolve</button>
     </div>
   );

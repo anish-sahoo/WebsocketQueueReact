@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client';
-import UserItem from './components/UserItem';
+import React, { useState, useEffect } from "react";
+import io from "socket.io-client";
+import UserItem from "./components/UserItem";
 
-const socket = io('http://localhost:3000'); // Replace with your server address
+const socket = io("http://10.152.208.69:3000"); // Replace with your server address
 
 interface Person {
   id: number;
@@ -16,16 +16,27 @@ const App: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(Date.now() + 1000);
 
   useEffect(() => {
-    socket.on('queueUpdated', (updatedPerson: Person) => {
-      setList([...list, updatedPerson]);
+    socket.on("initialData", (initialData) => {
+      setList(initialData);
+    });
+  
+    return () => {
+      socket.off("initialData");
+    };
+  }, []);
+  
+
+  useEffect(() => {
+    socket.on("queueUpdated", (updatedPersons: Person[]) => {
+      setList(updatedPersons);
     });
 
     return () => {
-      socket.off('queueUpdated'); // Clean up event listener on unmount
+      socket.off("queueUpdated");
     };
-  }, [list]);
+  }, []);
 
-  socket.on('queueUpdated', (updatedQueue) => {
+  socket.on("queueUpdated", (updatedQueue) => {
     setList(updatedQueue);
   });
 
@@ -40,18 +51,19 @@ const App: React.FC = () => {
   }, []);
 
   const handleQueueJoin = (userName: string) => {
-  const newPerson: Person = {
-    id: list.length, // Assuming id is sequential on the client-side
-    name: userName,
-    time: Date.now(),
+    if(!list.find((person) => person.name === userName)) {
+    const newPerson: Person = {
+      id: list.length, // Assuming id is sequential on the client-side
+      name: userName,
+      time: Date.now(),
+    };
+    socket.emit("joinQueue", newPerson);
+  }
   };
-  socket.emit('joinQueue', newPerson);
-};
 
-const handleQueueResolve = (id: number) => {
-  socket.emit('resolveQueue', id);
-};
-  
+  const handleQueueResolve = (id: number) => {
+    socket.emit("resolveQueue", id);
+  };
 
   return (
     <div className="w-screen min-h-screen bg-slate-400 flex justify-center text-lg">
@@ -65,9 +77,13 @@ const handleQueueResolve = (id: number) => {
       </div> */}
         <div className="flex flex-row">
           <p className="my-auto text-2xl">Name:</p>
-          <input name="Enter Name" className="px-2 mx-2" onChange={(e)=>{
-            setText(e.target.value);
-          }}></input>
+          <input
+            name="Enter Name"
+            className="py-2 mx-2 w-full"
+            onChange={(e) => {
+              setText(e.target.value);
+            }}
+          ></input>
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => handleQueueJoin(text)}
@@ -75,8 +91,8 @@ const handleQueueResolve = (id: number) => {
             Join Queue
           </button>
         </div>
-        <div className="flex flex-col items-center">
-          {list.map((item, index: number) => (
+        <div className="flex flex-col items-center py-4 md:px-8">
+          {list.map((item: Person, index: number) => (
             <div key={index}>
               <UserItem
                 user={{
@@ -92,6 +108,10 @@ const handleQueueResolve = (id: number) => {
       </div>
     </div>
   );
-}
+};
+
+App.defaultProps = {
+  list: [],
+};
 
 export default App;
