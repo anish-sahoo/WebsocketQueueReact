@@ -66,8 +66,8 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="w-screen min-h-screen bg-slate-400 flex justify-center text-lg">
-      <div className="flex-coltext-white items-center p-4 m-2">
+    <div className="w-screen min-h-screen h-full bg-slate-400 flex justify-center text-lg">
+      <div className="flex-col p-8 text-white items-center">
         {/* <div className="flex justify-center">
         <label className="mx-2 py-2 ">Username:</label>
         <input name="login" className="text-black mx-2 py-2 px-4 rounded"></input>
@@ -75,11 +75,11 @@ const App: React.FC = () => {
         <input name="password" className="text-black mx-2 py-2 px-4 rounded"></input>
         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Login</button>
       </div> */}
-        <div className="flex flex-row">
-          <p className="my-auto text-2xl">Name:</p>
+        <div className="flex flex-row flex-grow">
+          <p className="text-lg">Name:</p>
           <input
             name="Enter Name"
-            className="py-2 mx-2 w-full"
+            className="ml-3 py-2 px-4 rounded"
             onChange={(e) => {
               setText(e.target.value);
             }}
@@ -91,7 +91,7 @@ const App: React.FC = () => {
             Join Queue
           </button>
         </div>
-        <div className="flex flex-col items-center py-4 md:px-8">
+        <div className="flex flex-col items-center py-4 px-4 md:px-8">
           {list.map((item: Person, index: number) => (
             <div key={index}>
               <UserItem
